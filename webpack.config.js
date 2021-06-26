@@ -32,6 +32,10 @@ module.exports = (env, argv) => {
           ]
         },
         {
+          test: /\.css$/,
+          use: ["style-loader", "css-loader"]
+        },
+        {
           test: /\.js$/,
           exclude: [/elm-stuff/, /node_modules/],
           loader: 'babel-loader'
