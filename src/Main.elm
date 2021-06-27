@@ -23,14 +23,24 @@ main =
 -- UTILITY
 
 
-unwrap : Maybe (Maybe a) -> Maybe a
-unwrap mm =
+unwrapStone : Maybe Stone -> Stone
+unwrapStone mm =
     case mm of
         Just m ->
             m
 
         Nothing ->
-            Nothing
+            None
+
+
+toStone : Maybe Player -> Stone
+toStone mp =
+    case mp of
+        Just p ->
+            Exist p
+
+        Nothing ->
+            None
 
 
 flatten : List (List a) -> List a
@@ -43,14 +53,14 @@ serializeIdx x y =
     x * columns + y
 
 
-getCellAtPoint : Point -> Board -> Maybe Player
+getCellAtPoint : Point -> Board -> Stone
 getCellAtPoint p cells =
-    unwrap (Array.get (serializePoint p) cells)
+    unwrapStone (Array.get (serializePoint p) cells)
 
 
-getCellAt : Int -> Board -> Maybe Player
+getCellAt : Int -> Board -> Stone
 getCellAt idx cells =
-    unwrap (Array.get idx cells)
+    unwrapStone (Array.get idx cells)
 
 
 toggleTurn : Player -> Player
@@ -104,7 +114,7 @@ isPlayerWinnerAlongDirection i j dir player cells =
         |> List.map
             (\p -> serializePoint p)
         |> List.foldr
-            (\idx a -> a && getCellAt idx cells == Just player)
+            (\idx a -> a && getCellAt idx cells == Exist player)
             True
 
 
@@ -117,8 +127,13 @@ type Player
     | White
 
 
+type Stone
+    = Exist Player
+    | None
+
+
 type alias Board =
-    Array (Maybe Player)
+    Array Stone
 
 
 type alias Model =
@@ -148,7 +163,7 @@ init _ =
 
 initialModel : Model
 initialModel =
-    { cells = Array.initialize (rows * columns) (always Nothing)
+    { cells = Array.initialize (rows * columns) (always None)
     , turn = White
     , isFinished = False
     , winner = Nothing
@@ -171,13 +186,13 @@ update msg model =
             ( initialModel, Cmd.none )
 
         Place p ->
-            if model.isFinished || getCellAtPoint p model.cells /= Nothing then
+            if model.isFinished || getCellAtPoint p model.cells /= None then
                 ( model, Cmd.none )
 
             else
                 let
                     newCells =
-                        Array.set (serializePoint p) (Just model.turn) model.cells
+                        Array.set (serializePoint p) (Exist model.turn) model.cells
                 in
                 case judgeWinner p model.turn newCells of
                     Nothing ->
@@ -231,10 +246,11 @@ board model =
 statusbox : Model -> Html Msg
 statusbox model =
     if not model.isFinished then
-        p [] [ text "次は", div [ class "inline-stone" ] [ cellSvg (Just model.turn) ], text "の手番です" ]
+        p [] [ text "次は", div [ class "inline-stone" ] [ cellSvg (Exist model.turn) ], text "の手番です" ]
 
     else
-        p [] [ div [ class "inline-stone" ] [ cellSvg model.winner ], text "が勝ちました" ]
+        p []
+            [ div [ class "inline-stone" ] [ cellSvg (toStone model.winner) ], text "が勝ちました" ]
 
 
 goban : Board -> List (Html Msg)
@@ -257,18 +273,18 @@ renderCell p cells =
         ]
 
 
-cellSvg : Maybe Player -> Html Msg
+cellSvg : Stone -> Html Msg
 cellSvg player =
     case player of
-        Just Black ->
+        Exist Black ->
             svg [ viewBox "0 0 100 100" ]
                 [ circle [ cx "50", cy "50", r "30", fill "black", stroke "black", strokeWidth "5" ] [] ]
 
-        Just White ->
+        Exist White ->
             svg [ viewBox "0 0 100 100" ]
                 [ circle [ cx "50", cy "50", r "30", fill "white", stroke "black", strokeWidth "5" ] [] ]
 
-        Nothing ->
+        None ->
             span [] []
 
 
