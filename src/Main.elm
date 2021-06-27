@@ -73,25 +73,19 @@ toggleTurn player =
             Black
 
 
-judgeWinner : Point -> Player -> Board -> Maybe Player
-judgeWinner p turn cells =
-    if
-        flatten
-            (directions
-                |> List.map
-                    (\dir ->
-                        Point.listAlongDirection 5 p (Direction.negate dir)
-                            |> List.map
-                                (\{ x, y } -> isPlayerWinnerAlongDirection x y dir turn cells)
-                    )
-            )
-            |> List.foldr (||)
-                False
-    then
-        Just turn
-
-    else
-        Nothing
+isPlayerWinner : Point -> Player -> Board -> Bool
+isPlayerWinner p player cells =
+    flatten
+        (directions
+            |> List.map
+                (\dir ->
+                    Point.listAlongDirection 5 p (Direction.negate dir)
+                        |> List.map
+                            (\{ x, y } -> isPlayerWinnerAlongDirection x y dir player cells)
+                )
+        )
+        |> List.foldr (||)
+            False
 
 
 serializePoint : Point -> Int
@@ -194,23 +188,22 @@ update msg model =
                     newCells =
                         Array.set (serializePoint p) (Exist model.turn) model.cells
                 in
-                case judgeWinner p model.turn newCells of
-                    Nothing ->
-                        ( { model
-                            | cells = newCells
-                            , turn = toggleTurn model.turn
-                          }
-                        , Cmd.none
-                        )
+                if not (isPlayerWinner p model.turn newCells) then
+                    ( { model
+                        | cells = newCells
+                        , turn = toggleTurn model.turn
+                      }
+                    , Cmd.none
+                    )
 
-                    Just player ->
-                        ( { model
-                            | cells = newCells
-                            , isFinished = True
-                            , winner = Just player
-                          }
-                        , Cmd.none
-                        )
+                else
+                    ( { model
+                        | cells = newCells
+                        , isFinished = True
+                        , winner = Just model.turn
+                      }
+                    , Cmd.none
+                    )
 
 
 
@@ -246,11 +239,11 @@ board model =
 statusbox : Model -> Html Msg
 statusbox model =
     if not model.isFinished then
-        p [] [ text "次は", div [ class "inline-stone" ] [ cellSvg (Exist model.turn) ], text "の手番です" ]
+        p [] [ text "次は", div [ class "inline-stone" ] [ stoneSvg (Exist model.turn) ], text "の手番です" ]
 
     else
         p []
-            [ div [ class "inline-stone" ] [ cellSvg (toStone model.winner) ], text "が勝ちました" ]
+            [ div [ class "inline-stone" ] [ stoneSvg (toStone model.winner) ], text "が勝ちました" ]
 
 
 goban : Board -> List (Html Msg)
@@ -269,12 +262,12 @@ renderCell : Point -> Board -> Html Msg
 renderCell p cells =
     div [ class "cell-wrapper" ]
         [ div [ class "cell", onClick (Place p) ]
-            [ cellSvg (getCellAtPoint p cells) ]
+            [ stoneSvg (getCellAtPoint p cells) ]
         ]
 
 
-cellSvg : Stone -> Html Msg
-cellSvg player =
+stoneSvg : Stone -> Html Msg
+stoneSvg player =
     case player of
         Exist Black ->
             svg [ viewBox "0 0 100 100" ]
