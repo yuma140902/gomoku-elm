@@ -66,18 +66,17 @@ toggleTurn player =
 judgeWinner : Point -> Player -> Board -> Maybe Player
 judgeWinner p turn cells =
     if
-        List.foldr (||)
-            False
-            (flatten
-                (List.map
+        flatten
+            (directions
+                |> List.map
                     (\dir ->
-                        List.map
-                            (\{ x, y } -> isPlayerWinnerAlongDirection x y dir turn cells)
-                            (Point.listAlongDirection 5 p (Direction.negate dir))
+                        Point.listAlongDirection 5 p (Direction.negate dir)
+                            |> List.map
+                                (\{ x, y } -> isPlayerWinnerAlongDirection x y dir turn cells)
                     )
-                    directions
-                )
             )
+            |> List.foldr (||)
+                False
     then
         Just turn
 
@@ -101,13 +100,12 @@ directions =
 
 isPlayerWinnerAlongDirection : Int -> Int -> Direction -> Player -> Board -> Bool
 isPlayerWinnerAlongDirection i j dir player cells =
-    List.foldr
-        (\idx a -> a && (unwrap (nth idx cells) == Just player))
-        True
-        (List.map
+    Point.listAlongDirection 5 (Point i j) dir
+        |> List.map
             (\p -> serializePoint p)
-            (Point.listAlongDirection 5 (Point i j) dir)
-        )
+        |> List.foldr
+            (\idx a -> a && (unwrap (nth idx cells) == Just player))
+            True
 
 
 
@@ -241,11 +239,14 @@ statusbox model =
 
 goban : Board -> List (Html Msg)
 goban cells =
-    List.map
-        (\i ->
-            div [ class "board-row" ] (List.map (\j -> renderCell (Point i j) cells) (List.range 0 (columns - 1)))
-        )
-        (List.range 0 (rows - 1))
+    List.range 0 (rows - 1)
+        |> List.map
+            (\i ->
+                div [ class "board-row" ]
+                    (List.range 0 (columns - 1)
+                        |> List.map (\j -> renderCell (Point i j) cells)
+                    )
+            )
 
 
 renderCell : Point -> Board -> Html Msg
