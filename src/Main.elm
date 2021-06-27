@@ -1,12 +1,14 @@
 module Main exposing (..)
 
 import Browser
+import Direction exposing (Direction)
 import Html exposing (Html, a, button, div, h1, li, ol, p, section, span, text)
 import Html.Attributes exposing (class, id)
 import Html.Events exposing (onClick)
 import List.Extra
+import Point exposing (Point)
 import Svg exposing (circle, svg)
-import Svg.Attributes exposing (begin, cx, cy, fill, r, stroke, strokeWidth, viewBox)
+import Svg.Attributes exposing (cx, cy, fill, r, stroke, strokeWidth, viewBox)
 
 
 
@@ -71,7 +73,7 @@ judgeWinner i j turn cells =
                     (\dir ->
                         List.map
                             (\{ x, y } -> isPlayerWinnerAlongDirection x y dir turn cells)
-                            (pointsAlongDirection 5 (Point i j) (negateDirection dir))
+                            (Point.listAlongDirection 5 (Point i j) (Direction.negate dir))
                     )
                     directions
                 )
@@ -83,17 +85,9 @@ judgeWinner i j turn cells =
         Nothing
 
 
-type alias Point =
-    { x : Int, y : Int }
-
-
 serializePoint : Point -> Int
 serializePoint { x, y } =
     x * columns + y
-
-
-type alias Direction =
-    { diffX : Int, diffY : Int }
 
 
 directions : List Direction
@@ -105,25 +99,6 @@ directions =
     ]
 
 
-negateDirection : Direction -> Direction
-negateDirection { diffX, diffY } =
-    Direction -diffX -diffY
-
-
-neighborPoint : Point -> Direction -> Int -> Point
-neighborPoint { x, y } { diffX, diffY } distance =
-    Point (x + diffX * distance) (y + diffY * distance)
-
-
-pointsAlongDirection : Int -> Point -> Direction -> List Point
-pointsAlongDirection num begin dir =
-    let
-        neighbor =
-            neighborPoint begin dir
-    in
-    List.map (\i -> neighbor i) (List.range 0 (num - 1))
-
-
 isPlayerWinnerAlongDirection : Int -> Int -> Direction -> Player -> Board -> Bool
 isPlayerWinnerAlongDirection i j dir player cells =
     List.foldr
@@ -131,7 +106,7 @@ isPlayerWinnerAlongDirection i j dir player cells =
         True
         (List.map
             (\p -> serializePoint p)
-            (pointsAlongDirection 5 (Point i j) dir)
+            (Point.listAlongDirection 5 (Point i j) dir)
         )
 
 

@@ -1,10 +1,11 @@
-module Example exposing (..)
+module MainTest exposing (..)
 
+import Direction exposing (Direction)
 import Expect exposing (Expectation)
 import Fuzz exposing (..)
 import List.Extra
-import Main exposing (Direction)
-import Svg.Attributes exposing (in_)
+import Main
+import Point exposing (Point)
 import Test exposing (..)
 
 
@@ -87,58 +88,4 @@ suite =
             ]
         , describe "serializePoint"
             [ todo "serializePoint should change its arguments" ]
-        , describe "negateDirection"
-            [ test "positive" <|
-                \_ ->
-                    Main.negateDirection (Main.Direction 1 2) |> Expect.equal (Main.Direction -1 -2)
-            , test "negative" <|
-                \_ ->
-                    Main.negateDirection (Main.Direction -4 -3) |> Expect.equal (Main.Direction 4 3)
-            , test "positive and negative" <|
-                \_ ->
-                    Main.negateDirection (Main.Direction -6 7) |> Expect.equal (Main.Direction 6 -7)
-            , test "zero to zero" <|
-                \_ ->
-                    Main.negateDirection (Main.Direction 0 0) |> Expect.equal (Main.Direction 0 0)
-            ]
-        , describe "neighborPoint"
-            [ test "neighbor" <|
-                \_ ->
-                    Main.neighborPoint (Main.Point 0 0) (Main.Direction 1 -1) 3 |> Expect.equal (Main.Point 3 -3)
-            , fuzz
-                (tuple
-                    ( tuple ( int, int ) |> map (\( x, y ) -> Main.Point x y)
-                    , tuple ( int, int ) |> map (\( i, j ) -> Main.Direction i j)
-                    )
-                )
-                "origin"
-              <|
-                \( p, dir ) ->
-                    Main.neighborPoint p dir 0 |> Expect.equal p
-            , fuzz
-                (tuple
-                    ( tuple ( int, int )
-                        |> map (\( x, y ) -> Main.Point x y)
-                    , int
-                    )
-                )
-                "dir zero"
-              <|
-                \( p, distance ) ->
-                    Main.neighborPoint p (Direction 0 0) distance |> Expect.equal p
-            ]
-        , describe "pointsAlongDirection"
-            [ test "a" <|
-                \_ ->
-                    Main.pointsAlongDirection 4 (Main.Point 0 0) (Main.Direction 1 -1)
-                        |> Expect.equalLists [ Main.Point 0 0, Main.Point 1 -1, Main.Point 2 -2, Main.Point 3 -3 ]
-            , test "length zero" <|
-                \_ ->
-                    Main.pointsAlongDirection 0 (Main.Point 0 0) (Main.Direction 1 1)
-                        |> Expect.equalLists []
-            , test "dir zero" <|
-                \_ ->
-                    Main.pointsAlongDirection 3 (Main.Point 42 3) (Main.Direction 0 0)
-                        |> Expect.equalLists [ Main.Point 42 3, Main.Point 42 3, Main.Point 42 3 ]
-            ]
         ]
