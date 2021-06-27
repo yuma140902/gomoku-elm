@@ -1,10 +1,11 @@
 html {
-  height: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 body{
-  height: 100%;
   padding: 2em;
+  padding-top: 0;
 }
 
 .board-row {
@@ -70,13 +71,13 @@ body{
   flex-basis: 30%;
 }
 
-.github {
+.icons {
   position: fixed;
   right: 0;
   bottom: 0;
 }
 
-.github-icon {
+.icon {
   height: 2em;
   width: auto;
 }
