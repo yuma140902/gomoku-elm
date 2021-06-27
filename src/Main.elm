@@ -29,14 +29,11 @@ nth =
 unwrap : Maybe (Maybe a) -> Maybe a
 unwrap mm =
     case mm of
-        Just Nothing ->
-            Nothing
+        Just m ->
+            m
 
         Nothing ->
             Nothing
-
-        Just (Just a) ->
-            Just a
 
 
 flatten : List (List a) -> List a
