@@ -1,9 +1,9 @@
 module MainTest exposing (..)
 
+import Array
 import Direction exposing (Direction)
 import Expect exposing (Expectation)
 import Fuzz exposing (..)
-import List.Extra
 import Main
 import Point exposing (Point)
 import Test exposing (..)
@@ -12,21 +12,7 @@ import Test exposing (..)
 suite : Test
 suite =
     describe "Main module"
-        [ describe "nth"
-            [ test "0th" <|
-                \_ ->
-                    Main.nth 0 [ 1, 2, 3 ] |> Expect.equal (Just 1)
-            , test "3rd" <|
-                \_ ->
-                    Main.nth 2 [ 1, 2, 3 ] |> Expect.equal (Just 3)
-            , test "out of range" <|
-                \_ ->
-                    Main.nth 99 [ 1, 2, 3 ] |> Expect.equal Nothing
-            , test "out of range negative" <|
-                \_ ->
-                    Main.nth -1 [ 1, 2, 3 ] |> Expect.equal Nothing
-            ]
-        , describe "unwrap"
+        [ describe "unwrap"
             [ test "just just a" <|
                 \_ ->
                     Main.unwrap (Just (Just 1)) |> Expect.equal (Just 1)
@@ -53,30 +39,30 @@ suite =
                 \_ ->
                     let
                         cells =
-                            List.Extra.setAt 3 (Just Main.Black) (List.repeat (Main.rows * Main.columns) Nothing)
+                            Array.initialize (Main.rows * Main.columns) (always Nothing) |> Array.set 3 (Just Main.Black)
                     in
-                    Main.getCellAt (Point 0 3) cells |> Expect.equal (Just Main.Black)
+                    Main.getCellAtPoint (Point 0 3) cells |> Expect.equal (Just Main.Black)
             , test "reference to nothing" <|
                 \_ ->
                     let
                         cells =
-                            List.Extra.setAt 3 (Just Main.Black) (List.repeat (Main.rows * Main.columns) Nothing)
+                            Array.initialize (Main.rows * Main.columns) (always Nothing) |> Array.set 3 (Just Main.Black)
                     in
-                    Main.getCellAt (Point 4 4) cells |> Expect.equal Nothing
+                    Main.getCellAtPoint (Point 4 4) cells |> Expect.equal Nothing
             , test "out of range" <|
                 \_ ->
                     let
                         cells =
-                            List.repeat (Main.rows * Main.columns) (Just Main.Black)
+                            Array.initialize (Main.rows * Main.columns) (always (Just Main.Black))
                     in
-                    Main.getCellAt (Point 999 999) cells |> Expect.equal Nothing
+                    Main.getCellAtPoint (Point 999 999) cells |> Expect.equal Nothing
             , test "out of range negative" <|
                 \_ ->
                     let
                         cells =
-                            List.repeat (Main.rows * Main.columns) (Just Main.Black)
+                            Array.initialize (Main.rows * Main.columns) (always (Just Main.Black))
                     in
-                    Main.getCellAt (Point -1 -1) cells |> Expect.equal Nothing
+                    Main.getCellAtPoint (Point -1 -1) cells |> Expect.equal Nothing
             ]
         , describe "toggleTurn"
             [ test "black turns white" <|

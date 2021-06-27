@@ -1,11 +1,11 @@
 module Main exposing (..)
 
+import Array exposing (Array)
 import Browser
 import Direction exposing (Direction)
 import Html exposing (Html, a, button, div, h1, li, ol, p, section, span, text)
 import Html.Attributes exposing (class, id)
 import Html.Events exposing (onClick)
-import List.Extra
 import Point exposing (Point)
 import Svg exposing (circle, svg)
 import Svg.Attributes exposing (cx, cy, fill, r, stroke, strokeWidth, viewBox)
@@ -21,11 +21,6 @@ main =
 
 
 -- UTILITY
-
-
-nth : Int -> List a -> Maybe a
-nth =
-    List.Extra.getAt
 
 
 unwrap : Maybe (Maybe a) -> Maybe a
@@ -48,9 +43,14 @@ serializeIdx x y =
     x * columns + y
 
 
-getCellAt : Point -> Board -> Maybe Player
-getCellAt p cells =
-    unwrap (nth (serializePoint p) cells)
+getCellAtPoint : Point -> Board -> Maybe Player
+getCellAtPoint p cells =
+    unwrap (Array.get (serializePoint p) cells)
+
+
+getCellAt : Int -> Board -> Maybe Player
+getCellAt idx cells =
+    unwrap (Array.get idx cells)
 
 
 toggleTurn : Player -> Player
@@ -104,7 +104,7 @@ isPlayerWinnerAlongDirection i j dir player cells =
         |> List.map
             (\p -> serializePoint p)
         |> List.foldr
-            (\idx a -> a && (unwrap (nth idx cells) == Just player))
+            (\idx a -> a && getCellAt idx cells == Just player)
             True
 
 
@@ -118,7 +118,7 @@ type Player
 
 
 type alias Board =
-    List (Maybe Player)
+    Array (Maybe Player)
 
 
 type alias Model =
@@ -148,7 +148,7 @@ init _ =
 
 initialModel : Model
 initialModel =
-    { cells = List.repeat (rows * columns) Nothing
+    { cells = Array.initialize (rows * columns) (always Nothing)
     , turn = White
     , isFinished = False
     , winner = Nothing
@@ -171,13 +171,13 @@ update msg model =
             ( initialModel, Cmd.none )
 
         Place p ->
-            if model.isFinished || getCellAt p model.cells /= Nothing then
+            if model.isFinished || getCellAtPoint p model.cells /= Nothing then
                 ( model, Cmd.none )
 
             else
                 let
                     newCells =
-                        List.Extra.setAt (serializePoint p) (Just model.turn) model.cells
+                        Array.set (serializePoint p) (Just model.turn) model.cells
                 in
                 case judgeWinner p model.turn newCells of
                     Nothing ->
@@ -253,7 +253,7 @@ renderCell : Point -> Board -> Html Msg
 renderCell p cells =
     div [ class "cell-wrapper" ]
         [ div [ class "cell", onClick (Place p) ]
-            [ cellSvg (getCellAt p cells) ]
+            [ cellSvg (getCellAtPoint p cells) ]
         ]
 
 
