@@ -4,7 +4,7 @@
   "description": "",
   "main": "./src/index.js",
   "scripts": {
-    "deploy": "git checkout gh-pages & git merge main & npm run build & git push",
+    "deploy": "git checkout gh-pages & git merge main & npm run build & git add --all & git commit -m 'Update' & git push",
     "build": "webpack --mode=production",
     "start": "webpack serve --mode=development",
     "test": "elm-test"
