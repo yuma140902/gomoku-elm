@@ -1,4 +1,4 @@
-module Main exposing (main)
+module Main exposing (..)
 
 import Browser
 import Html exposing (Html, a, button, div, h1, li, ol, p, section, span, text)
@@ -22,8 +22,8 @@ main =
 
 
 nth : Int -> List a -> Maybe a
-nth idx xs =
-    List.head (List.drop idx xs)
+nth =
+    List.Extra.getAt
 
 
 unwrap : Maybe (Maybe a) -> Maybe a
@@ -46,7 +46,7 @@ flatten xss =
 
 serializeIdx : Int -> Int -> Int
 serializeIdx x y =
-    x * rows + y
+    x * columns + y
 
 
 getCellAt : Int -> Int -> Board -> Maybe Player
@@ -92,7 +92,7 @@ type alias Point =
 
 serializePoint : Point -> Int
 serializePoint { x, y } =
-    x * rows + y
+    x * columns + y
 
 
 type alias Direction =
