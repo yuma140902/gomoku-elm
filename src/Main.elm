@@ -48,9 +48,9 @@ serializeIdx x y =
     x * columns + y
 
 
-getCellAt : Int -> Int -> Board -> Maybe Player
-getCellAt i j cells =
-    unwrap (nth (serializeIdx i j) cells)
+getCellAt : Point -> Board -> Maybe Player
+getCellAt p cells =
+    unwrap (nth (serializePoint p) cells)
 
 
 toggleTurn : Player -> Player
@@ -63,8 +63,8 @@ toggleTurn player =
             Black
 
 
-judgeWinner : Int -> Int -> Player -> Board -> Maybe Player
-judgeWinner i j turn cells =
+judgeWinner : Point -> Player -> Board -> Maybe Player
+judgeWinner p turn cells =
     if
         List.foldr (||)
             False
@@ -73,7 +73,7 @@ judgeWinner i j turn cells =
                     (\dir ->
                         List.map
                             (\{ x, y } -> isPlayerWinnerAlongDirection x y dir turn cells)
-                            (Point.listAlongDirection 5 (Point i j) (Direction.negate dir))
+                            (Point.listAlongDirection 5 p (Direction.negate dir))
                     )
                     directions
                 )
@@ -163,7 +163,7 @@ initialModel =
 
 type Msg
     = Reset
-    | Place Int Int
+    | Place Point
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -172,16 +172,16 @@ update msg model =
         Reset ->
             ( initialModel, Cmd.none )
 
-        Place i j ->
-            if model.isFinished || getCellAt i j model.cells /= Nothing then
+        Place p ->
+            if model.isFinished || getCellAt p model.cells /= Nothing then
                 ( model, Cmd.none )
 
             else
                 let
                     newCells =
-                        List.Extra.setAt (serializeIdx i j) (Just model.turn) model.cells
+                        List.Extra.setAt (serializePoint p) (Just model.turn) model.cells
                 in
-                case judgeWinner i j model.turn newCells of
+                case judgeWinner p model.turn newCells of
                     Nothing ->
                         ( { model
                             | cells = newCells
@@ -243,16 +243,16 @@ goban : Board -> List (Html Msg)
 goban cells =
     List.map
         (\i ->
-            div [ class "board-row" ] (List.map (\j -> renderCell i j cells) (List.range 0 (columns - 1)))
+            div [ class "board-row" ] (List.map (\j -> renderCell (Point i j) cells) (List.range 0 (columns - 1)))
         )
         (List.range 0 (rows - 1))
 
 
-renderCell : Int -> Int -> Board -> Html Msg
-renderCell i j cells =
+renderCell : Point -> Board -> Html Msg
+renderCell p cells =
     div [ class "cell-wrapper" ]
-        [ div [ class "cell", onClick (Place i j) ]
-            [ cellSvg (getCellAt i j cells) ]
+        [ div [ class "cell", onClick (Place p) ]
+            [ cellSvg (getCellAt p cells) ]
         ]
 
 

@@ -55,28 +55,28 @@ suite =
                         cells =
                             List.Extra.setAt 3 (Just Main.Black) (List.repeat (Main.rows * Main.columns) Nothing)
                     in
-                    Main.getCellAt 0 3 cells |> Expect.equal (Just Main.Black)
+                    Main.getCellAt (Point 0 3) cells |> Expect.equal (Just Main.Black)
             , test "reference to nothing" <|
                 \_ ->
                     let
                         cells =
                             List.Extra.setAt 3 (Just Main.Black) (List.repeat (Main.rows * Main.columns) Nothing)
                     in
-                    Main.getCellAt 4 4 cells |> Expect.equal Nothing
+                    Main.getCellAt (Point 4 4) cells |> Expect.equal Nothing
             , test "out of range" <|
                 \_ ->
                     let
                         cells =
                             List.repeat (Main.rows * Main.columns) (Just Main.Black)
                     in
-                    Main.getCellAt 999 999 cells |> Expect.equal Nothing
+                    Main.getCellAt (Point 999 999) cells |> Expect.equal Nothing
             , test "out of range negative" <|
                 \_ ->
                     let
                         cells =
                             List.repeat (Main.rows * Main.columns) (Just Main.Black)
                     in
-                    Main.getCellAt -1 -1 cells |> Expect.equal Nothing
+                    Main.getCellAt (Point -1 -1) cells |> Expect.equal Nothing
             ]
         , describe "toggleTurn"
             [ test "black turns white" <|
