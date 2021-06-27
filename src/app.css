@@ -1,4 +1,9 @@
+html {
+  height: 100%;
+}
+
 body{
+  height: 100%;
   padding: 2em;
 }
 
@@ -63,4 +68,15 @@ body{
 #side {
   flex-grow: 3;
   flex-basis: 30%;
+}
+
+.github {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+}
+
+.github-icon {
+  height: 2em;
+  width: auto;
 }
